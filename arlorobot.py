@@ -21,6 +21,7 @@ class ArloRobot(object):
 		#speeds
 		self.topSpeed=DEFAULT_TOP_SPEED
 		self.paramVal=None
+
 	def end(self):
 		self.uart.deinit()
 
@@ -46,16 +47,16 @@ class ArloRobot(object):
 
 	# measurements
 	def readCountsLeft(self):
-		pass
+		return self.com("DIST", 0, 2)[0]
 
 	def readCountsRight(self):
-		pass
+		return self.com("DIST", 0, 2)[1]
 
 	def readSpeedLeft(self):
-		pass
+		return self.com("SPD", 0, 2)[0]
 
 	def readSpeedRight(self):
-		pass
+		return self.com("SPD", 0, 2)[1]
 
 	# communication modes
 	def writePulseMode(self):
@@ -102,6 +103,13 @@ class ArloRobot(object):
 		for i in self.paramVal:
 			packet+=" "+str(i)
 		self.uart.write(bytearray(packet))
+		time.sleep_ms(50)
+		tinit=utime.ticks_us()
+		while (utime.ticks_us()-tinit)<1600: #timeout of 1600us
+			resp=uart.read(retCount)
+			if resp is not None:
+				return resp
+		return None
 
 
 def constrain(val, min_val, max_val):
