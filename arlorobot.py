@@ -18,12 +18,17 @@ class ArloRobot(object):
 		self.uart=UART(tx=self.tx, rx=self.rx, baudrate=self.baudrate)
 		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0)
 
+		#speeds
+		self.topSpeed=DEFAULT_TOP_SPEED
+		self.paramVal=None
 	def end(self):
-		pass
+		self.uart.deinit()
 
 	# movements
 	def writeCounts(self, left, right):
-		pass
+		self.paramVal.clear()
+		self.paramVal=[left, right, self.topSpeed]
+		self.com("MOVE",3,0)
 
 	def writeSpeed(self, left, right):
 		pass
@@ -80,7 +85,16 @@ class ArloRobot(object):
 	def checkCharacter(self):
 		pass
 
+	# com packet sending
+	def com(self, command, paramCount, retCount):
+		packet=command
+		for i in self.paramVal:
+			packet+=" "+str(i)
+		self.uart.write(bytearray(packet))
 
+
+def constrain(val, min_val, max_val):
+    return min(max_val, max(min_val, val))
 
 
 
