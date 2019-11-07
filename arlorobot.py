@@ -1,5 +1,5 @@
 from machine import UART
-import time
+import utime
 
 DHB10_MAX_MOTOR_PWR = 127
 DT_PREV_ENCODER_CHECK = 40
@@ -11,16 +11,16 @@ DEFAULT_TOP_SPEED = 200
 class ArloRobot(object):
 
 	#set up/set down
-	def __init__(self,tx=17,rx=16,baudrate=19200):
+	def __init__(self,serialid=2,tx=17,rx=16,baudrate=19200):
 		self.tx=tx
 		self.rx=rx
 		self.baudrate=baudrate
-		self.uart=UART(tx=self.tx, rx=self.rx, baudrate=self.baudrate)
-		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0)
+		self.uart=UART(serialid,self.baudrate)
+		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0,tx=self.tx, rx=self.rx)
 
 		#speeds
 		self.topSpeed=DEFAULT_TOP_SPEED
-		self.paramVal=None
+		self.paramVal=[]
 
 	def end(self):
 		self.uart.deinit()
@@ -102,11 +102,13 @@ class ArloRobot(object):
 		packet=command
 		for i in self.paramVal:
 			packet+=" "+str(i)
+		print(packet)
+		print(bytearray(packet))
 		self.uart.write(bytearray(packet))
-		time.sleep_ms(50)
+		utime.sleep_ms(50)
 		tinit=utime.ticks_us()
 		while (utime.ticks_us()-tinit)<1600: #timeout of 1600us
-			resp=uart.read(retCount)
+			resp=self.uart.read(retCount)
 			if resp is not None:
 				return resp
 		return None
