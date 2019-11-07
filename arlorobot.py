@@ -30,11 +30,19 @@ class ArloRobot(object):
 		self.paramVal=[left, right, self.topSpeed]
 		self.com("MOVE",3,0)
 
-	def writeSpeed(self, left, right):
-		pass
+	def writeSpeeds(self, left, right):
+		left = constrain(left, -topSpeed, topSpeed)
+		right = constrain(right, -topSpeed, topSpeed)
+		self.paramVal.clear()
+		self.paramVal=[left,right]
+		self.com("GOSPD",2,0)
 
 	def writeMotorPower(self, left, right):
-		pass
+		left = constrain(left, -DHB10_MAX_MOTOR_PWR, DHB10_MAX_MOTOR_PWR)
+		right = constrain(right, -DHB10_MAX_MOTOR_PWR, DHB10_MAX_MOTOR_PWR)
+		self.paramVal=[left, right]
+		self.com("GO",2,0)
+
 
 	# measurements
 	def readCountsLeft(self):
@@ -51,36 +59,39 @@ class ArloRobot(object):
 
 	# communication modes
 	def writePulseMode(self):
-		pass
+		self.com("PULSE", 0, 0)
 
 	# information
 	def readFirmwareVer(self):
-		pass
+		return self.com("VER",0,1)
+
 	def readHardwareVer(self):
-		pass
+		return self.com("HWER",0,1)
 
 	def readSpeedLimit(self):
-		pass
+		return self.topSpeed
 
 	# configuration
 	def writeConfig(self, configString, value):
-		pass
+		self.paramVal.clear()
+		self.paramVal=[value]
+		self.com(configString,1,0)
 
 	def readConfig(self, configString):
 		pass
 
 	def writeSpeedLimit(self, countsPerSecond):
-		pass
+		self.topSpeed=countsPerSecond
 
 	def clearCounts(self):
-		pass
+		self.com("RST", 0, 0)
 
 	#nonvolatile configuration storage
 	def storeConfig(self, configString):
 		pass
 
 	def restoreConfig(self):
-		pass
+		self.com("RESTORE", 0, 0)
 
 	def checkCharacter(self):
 		pass
