@@ -17,7 +17,7 @@ class ArloRobot(object):
 		self.baudrate=baudrate
 		self.uart=UART(serialid,self.baudrate)
 		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0,tx=self.tx, rx=self.rx)
-
+		self.uart.write("TXPIN CH2\r")
 		#speeds
 		self.topSpeed=DEFAULT_TOP_SPEED
 		self.paramVal=[]
@@ -25,49 +25,57 @@ class ArloRobot(object):
 	def end(self):
 		self.uart.deinit()
 
-	# movements
-	def writeCounts(self, left, right):
-		self.paramVal.clear()
-		self.paramVal=[left, right, self.topSpeed]
-		self.com("MOVE",3,0)
+#-------------------------- movements methods------------------------
 
-	def writeSpeeds(self, left, right):
-		left = constrain(left, -topSpeed, topSpeed)
-		right = constrain(right, -topSpeed, topSpeed)
+	# Turn command
+
+	def turn(self, motor_movement, top_speed):
+		self.paramVal.clear()
+		self.paramVal=[motor_movement, top_speed]
+		self.com("TURN")
+
+	# left/right -> -32767 to 32767
+	# speed -> 1 to 32767
+	def move(self, left, right, speed):
+		self.paramVal.clear()
+		self.paramVal=[left, right, speed]
+		self.com("MOVE")
+
+	# left/right -> -32767 to 32767
+	def go_speed(self, left, right):
 		self.paramVal.clear()
 		self.paramVal=[left,right]
-		self.com("GOSPD",2,0)
+		self.com("GOSPD")
 
-	def writeMotorPower(self, left, right):
-		left = constrain(left, -DHB10_MAX_MOTOR_PWR, DHB10_MAX_MOTOR_PWR)
-		right = constrain(right, -DHB10_MAX_MOTOR_PWR, DHB10_MAX_MOTOR_PWR)
+	# left/right -> -127 to 127
+	def go(self, left, right):
 		self.paramVal=[left, right]
-		self.com("GO",2,0)
+		self.com("GO")
 
 
 	# measurements
 	def readCountsLeft(self):
-		return self.com("DIST", 0, 2)[0]
+		return self.com("DIST")[0]
 
 	def readCountsRight(self):
-		return self.com("DIST", 0, 2)[1]
+		return self.com("DIST")[1]
 
 	def readSpeedLeft(self):
-		return self.com("SPD", 0, 2)[0]
+		return self.com("SPD")[0]
 
 	def readSpeedRight(self):
-		return self.com("SPD", 0, 2)[1]
+		return self.com("SPD")[1]
 
 	# communication modes
 	def writePulseMode(self):
-		self.com("PULSE", 0, 0)
+		self.com("PULSE")
 
 	# information
 	def readFirmwareVer(self):
-		return self.com("VER",0,1)
+		return self.com("VER")
 
 	def readHardwareVer(self):
-		return self.com("HWER",0,1)
+		return self.com("HWER")
 
 	def readSpeedLimit(self):
 		return self.topSpeed
@@ -98,17 +106,16 @@ class ArloRobot(object):
 		pass
 
 	# com packet sending
-	def com(self, command, paramCount, retCount):
+	def com(self, command):
 		packet=command
 		for i in self.paramVal:
 			packet+=" "+str(i)
+		packet+="\r"
 		print(packet)
-		print(bytearray(packet))
-		self.uart.write(bytearray(packet))
-		utime.sleep_ms(50)
+		self.uart.write(packet)
 		tinit=utime.ticks_us()
-		while (utime.ticks_us()-tinit)<1600: #timeout of 1600us
-			resp=self.uart.read(retCount)
+		while (utime.ticks_us()-tinit)<5000000: #timeout of 1600us
+			resp=self.uart.read(5)
 			if resp is not None:
 				return resp
 		return None
@@ -116,10 +123,6 @@ class ArloRobot(object):
 
 def constrain(val, min_val, max_val):
     return min(max_val, max(min_val, val))
-
-
-
-
 
 
 	
