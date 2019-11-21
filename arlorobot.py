@@ -1,6 +1,8 @@
+# pins and serial library
 from machine import UART
 import utime
 
+# some constants
 DHB10_MAX_MOTOR_PWR = 127
 DT_PREV_ENCODER_CHECK = 40
 LAST_EXCG_STR_LEN = 96
@@ -8,27 +10,31 @@ EXCG_STR_LEN = 96
 LAST_EXCG_TX_MIN = 16
 DEFAULT_TOP_SPEED = 200
 
+# object to control de DHB-10 driver
 class ArloRobot(object):
 
-	#set up/set down
+	# set up/set down
+	# serialid is defined as the ID of the serial bus from the
+	# microcontroller, however tx and rx can be defined
 	def __init__(self,serialid=2,tx=17,rx=16,baudrate=19200):
 		self.tx=tx
 		self.rx=rx
 		self.baudrate=baudrate
 		self.uart=UART(serialid,self.baudrate)
 		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0,tx=self.tx, rx=self.rx)
-		self.uart.write("TXPIN CH2\r")
+		self.uart.write("TXPIN CH2\r") #needed so that reading is possible
 		#speeds
 		self.topSpeed=DEFAULT_TOP_SPEED
 		self.paramVal=[]
 
+	# end serial connection
 	def end(self):
 		self.uart.deinit()
 
 #-------------------------- movements methods------------------------
 
 	# Turn command
-
+	# Use not recommended unless firmware is updated
 	def turn(self, motor_movement, top_speed):
 		self.paramVal.clear()
 		self.paramVal=[motor_movement, top_speed]
@@ -54,10 +60,10 @@ class ArloRobot(object):
 
 
 	# measurements
-	def readCountsLeft(self):
+	def read_counts_left(self):
 		return self.com("DIST")[0]
 
-	def readCountsRight(self):
+	def read_counts_right(self):
 		return self.com("DIST")[1]
 
 	def readSpeedLeft(self):
@@ -113,8 +119,8 @@ class ArloRobot(object):
 		packet+="\r"
 		print(packet)
 		self.uart.write(packet)
-		tinit=utime.ticks_us()
-		while (utime.ticks_us()-tinit)<5000000: #timeout of 1600us
+		tinit=utime.ticks_ms()
+		while (utime.ticks_ms()-tinit)<200: #timeout of 1600us
 			resp=self.uart.read(5)
 			if resp is not None:
 				return resp
