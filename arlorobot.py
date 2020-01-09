@@ -12,6 +12,35 @@ DEFAULT_TOP_SPEED = 200
 
 # object to control de DHB-10 driver
 class ArloRobot(object):
+	
+		# com packet sending
+	def com(self, packet):
+		for i in packet:
+			print(i)
+			self.uart.write(i)
+			self.uart.write(" ")
+		self.uart.write("\r")
+		tinit=utime.ticks_ms()
+		resp=[]
+		while (utime.ticks_ms()-tinit)<1000: #timeout of 1600us
+			data=self.uart.read(1)
+			if data is not None:
+				resp.append(data)
+		return resp
+
+	def com2(self, packet):
+		for i in packet:
+			print(i)
+			self.uart.write(i)
+			self.uart.write(" ")
+		self.uart.write("\r")
+		tinit=utime.ticks_ms()
+		resp=[]
+		while (utime.ticks_ms()-tinit)<1000: #timeout of 1600us
+			data=self.uart.read(20)
+			if data is not None:
+				return data
+		return None
 
 	# set up/set down
 	# serialid is defined as the ID of the serial bus from the
@@ -22,10 +51,8 @@ class ArloRobot(object):
 		self.baudrate=baudrate
 		self.uart=UART(serialid,self.baudrate)
 		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0,tx=self.tx, rx=self.rx)
-		self.uart.write("TXPIN CH2\r") #needed so that reading is possible
-		#speeds
-		self.topSpeed=DEFAULT_TOP_SPEED
-		self.paramVal=[]
+		self.com(["txpin","ch2"])#needed so that reading is possible
+		
 
 	# end serial connection
 	def end(self):
@@ -36,95 +63,79 @@ class ArloRobot(object):
 	# Turn command
 	# Use not recommended unless firmware is updated
 	def turn(self, motor_movement, top_speed):
-		self.paramVal.clear()
-		self.paramVal=[motor_movement, top_speed]
-		self.com("TURN")
+		self.com(["TURN",str(motor_movement),str(top_speed)])
 
 	# left/right -> -32767 to 32767
 	# speed -> 1 to 32767
 	def move(self, left, right, speed):
-		self.paramVal.clear()
-		self.paramVal=[left, right, speed]
-		self.com("MOVE")
+		self.com(["MOVE",str(left),str(right),str(speed)])
 
 	# left/right -> -32767 to 32767
 	def go_speed(self, left, right):
-		self.paramVal.clear()
-		self.paramVal=[left,right]
-		self.com("GOSPD")
+		self.com(["GOSPD",str(left),str(right)])
 
 	# left/right -> -127 to 127
 	def go(self, left, right):
-		self.paramVal=[left, right]
-		self.com("GO")
+		self.com(["GO",str(left),str(right)])
 
 
 	# measurements
 	def read_counts_left(self):
-		return self.com("DIST")[0]
+		return self.com(["DIST"])
 
 	def read_counts_right(self):
-		return self.com("DIST")[1]
+		return self.com(["DIST"])
 
-	def readSpeedLeft(self):
-		return self.com("SPD")[0]
+	def read_speed_left(self):
+		return self.com(["SPD"])
 
-	def readSpeedRight(self):
-		return self.com("SPD")[1]
+	def read_speed_right(self):
+		return self.com(["SPD"])
 
 	# communication modes
-	def writePulseMode(self):
-		self.com("PULSE")
+	def write_pulse_mode(self):
+		self.com(["PULSE"])
 
 	# information
-	def readFirmwareVer(self):
-		return self.com("VER")
+	def read_firmware_ver(self):
+		return self.com(["VER"])
 
-	def readHardwareVer(self):
-		return self.com("HWER")
+	def read_hardware_ver(self):
+		return self.com(["HWVER"])
 
-	def readSpeedLimit(self):
+	def read_speedLimit(self):
 		return self.topSpeed
 
-	# configuration
-	def writeConfig(self, configString, value):
-		self.paramVal.clear()
-		self.paramVal=[value]
-		self.com(configString,1,0)
+	#communication
+	def set_hex_com(self):
+		return self.com(['HEX'])
 
-	def readConfig(self, configString):
+	def set_dec_com(self):
+		return self.com(['DEC'])
+
+	# configuration
+	def write_config(self, configString, value):
 		pass
 
-	def writeSpeedLimit(self, countsPerSecond):
+	def read_config(self, configString):
+		pass
+
+	def write_speed_limit(self, countsPerSecond):
 		self.topSpeed=countsPerSecond
 
-	def clearCounts(self):
-		self.com("RST", 0, 0)
+	def clear_counts(self):
+		self.com(["RST"])
 
 	#nonvolatile configuration storage
-	def storeConfig(self, configString):
+	def store_config(self, configString):
 		pass
 
-	def restoreConfig(self):
-		self.com("RESTORE", 0, 0)
+	def restore_config(self):
+		self.com(["RESTORE"])
 
-	def checkCharacter(self):
+	def check_character(self):
 		pass
 
-	# com packet sending
-	def com(self, command):
-		packet=command
-		for i in self.paramVal:
-			packet+=" "+str(i)
-		packet+="\r"
-		print(packet)
-		self.uart.write(packet)
-		tinit=utime.ticks_ms()
-		while (utime.ticks_ms()-tinit)<200: #timeout of 1600us
-			resp=self.uart.read(5)
-			if resp is not None:
-				return resp
-		return None
 
 
 def constrain(val, min_val, max_val):
