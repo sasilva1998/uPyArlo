@@ -28,20 +28,6 @@ class ArloRobot(object):
 				resp.append(data)
 		return resp
 
-	def com2(self, packet):
-		for i in packet:
-			print(i)
-			self.uart.write(i)
-			self.uart.write(" ")
-		self.uart.write("\r")
-		tinit=utime.ticks_ms()
-		resp=[]
-		while (utime.ticks_ms()-tinit)<1000: #timeout of 1600us
-			data=self.uart.read(20)
-			if data is not None:
-				return data
-		return None
-
 	# set up/set down
 	# serialid is defined as the ID of the serial bus from the
 	# microcontroller, however tx and rx can be defined
@@ -52,6 +38,7 @@ class ArloRobot(object):
 		self.uart=UART(serialid,self.baudrate)
 		self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0,tx=self.tx, rx=self.rx)
 		self.com(["txpin","ch2"])#needed so that reading is possible
+		self.com(["ECHO","ON"])
 		
 
 	# end serial connection
