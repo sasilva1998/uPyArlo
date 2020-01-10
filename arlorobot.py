@@ -177,6 +177,10 @@ class ArloRobot(object):
 	def set_ppr(self,ppr):
 		return self.com(["PPR",str(ppr)])
 
+	#-------- config ----------
+	def restore_config(self):
+		return self.com(["RESTORE"])
+
 
 def constrain(val, min_val, max_val):
     return min(max_val, max(min_val, val))
