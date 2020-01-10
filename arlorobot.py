@@ -8,7 +8,6 @@ class ArloRobot(object):
 		# com packet sending
 	def com(self, packet):
 		for i in packet:
-			print(i)
 			self.uart.write(i)
 			self.uart.write(" ")
 		self.uart.write("\r")
@@ -17,11 +16,18 @@ class ArloRobot(object):
 		while (utime.ticks_ms()-tinit)<150: #timeout of 1600us
 			data=self.uart.read(1)
 			if data is not None and data!=b'\r':
-				resp=resp+data.decode('utf-8')
+				resp=resp+str(data)[2:][:-1]
 
 		if resp is not None:
-			resp=resp.split("xd6")[1].split(" ")
-			resp=[int(i) for i in resp]
+			resp=resp.split("xd6")[-1].split("xc3")[-1].split(" ")
+
+			try:
+				resp=[int(i) for i in resp]
+			except:
+				return None
+
+			if len(resp)!=2:
+				return resp[0]
 			return resp
 		return resp
 
