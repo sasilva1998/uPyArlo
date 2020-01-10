@@ -153,6 +153,30 @@ class ArloRobot(object):
 	def set_ki_decay(self, decay):
 		return self.com(["KIT",str(decay)])
 
+	def set_kimax(self,maxim):
+		return self.com(["KIMAX",str(maxim)])
+
+	def set_ki_constant(self,constant):
+		return self.com(["KI",str(constant)])
+
+	def set_kp_constant(self,constant):
+		return self.com(["KP",str(constant)])
+
+	def set_acc_rate(self,acc):
+		return self.com(["ACC",str(acc)])
+
+	def set_ramp_rate(self,rate):
+		return self.com(["RAMP",str(rate)])
+
+	def set_live_zone(self,limit):
+		return self.com(["LZ",str(limit)])
+
+	def set_dead_zone(self,limit):
+		return self.com(["DZ",str(limit)])
+
+	def set_ppr(self,ppr):
+		return self.com(["PPR",str(ppr)])
+
 
 def constrain(val, min_val, max_val):
     return min(max_val, max(min_val, val))
