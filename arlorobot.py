@@ -20,7 +20,6 @@ class ArloRobot(object):
 
 		if resp is not None:
 			resp=resp.split("xd6")[-1].split("xc3")[-1].split(" ")
-			print(resp)
 
 			try:
 				resp=[int(i) for i in resp]
