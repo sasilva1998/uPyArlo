@@ -20,11 +20,12 @@ class ArloRobot(object):
 
 		if resp is not None:
 			resp=resp.split("xd6")[-1].split("xc3")[-1].split(" ")
+			print(resp)
 
 			try:
 				resp=[int(i) for i in resp]
 			except:
-				return None
+				return resp
 
 			if len(resp)!=2:
 				return resp[0]
@@ -95,7 +96,14 @@ class ArloRobot(object):
 		return self.com(["SPD"])[1]
 
 	def read_head_angle(self):
-		return self.com(["HEAD"])[0]
+		data=self.com(["HEAD"])
+		try: 
+			if len(data)==2:
+				return int((data[1]))
+			else:
+				return int(data[0])
+		except:
+			return data
 
 	def read_firmware_ver(self):
 		return self.com(["VER"])
