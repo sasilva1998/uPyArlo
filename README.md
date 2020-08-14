@@ -4,7 +4,7 @@ MicroPython library to control DBH-10 for Arlo Parallax platform.
 In this repo you will find a script called `arlorobot.py`, which contains an object `ArloRobot()` with its corresponding methods in order to controll the driver DBH-10.
 
 ## Object initialization
-The object is defined with the following parameters: `def __init__(self,serial_id=2,tx=17,rx=16,baudrate=19200)`, where `serialid` defines the ID of the UART bus that will be used. By default in uPy when `serialid` is defined, `tx` and `rx` are by default as well, however they can still be changed in case the pins are different in other boards.
+The object is defined with the following parameters: `def __init__(self,serial_id=2,tx=17,rx=16,baudrate=19200)`, where `serial_id` defines the ID of the UART bus that will be used. By default in uPy when `serial_id` is defined, `tx` and `rx` are by default as well, however they can still be changed in case the pins are different in other boards.
 
 Here is an example of how it should be:
 ```python
