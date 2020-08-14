@@ -34,14 +34,29 @@ class ArloRobot(object):
     # set up/set down
     # serialid is defined as the ID of the serial bus from the
     # microcontroller, however tx and rx can be defined
-    def __init__(self, serialid=2, tx=17, rx=16, baudrate=19200):
+    def __init__(self, serial_id=2, baudrate=115200, **kwargs):
         self.tx = tx
         self.rx = rx
         self.baudrate = baudrate
-        self.uart = UART(serialid, self.baudrate)
-        self.uart.init(
-            self.baudrate, bits=8, parity=None, stop=1, txbuf=0, tx=self.tx, rx=self.rx
-        )
+        self.serial_id = serial_id
+
+        if "serial" in kwargs:
+            self.uart = kwargs.get("serial")
+        elif "tx" in kwargs and "rx" in kwargs:
+            self.uart = UART(self.serial_id, self.baudrate)
+            self.uart.init(
+                self.baudrate,
+                tx=kwargs.get("tx"),
+                rx=kwargs.get("rx"),
+                bits=8,
+                parity=None,
+                stop=1,
+                txbuf=0,
+            )
+        else:
+            self.uart = UART(self.serial_id, self.baudrate)
+            self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0)
+
         self.com(["TXPIN", "CH2"])  # needed so that reading is possible
         self.com(["DEC"])
         self.com(["ECHO", "ON"])
