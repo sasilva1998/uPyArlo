@@ -27,6 +27,7 @@ robot=ArloRobot(serial_id=1, tx=12,rx=13,baudrate=115200)
 | Method                            | What it does                                                 |
 | --------------------------------- | ------------------------------------------------------------ |
 | `turn(motor_movement, top_speed)` | Turns the robot in place, but instead of degrees, the `motor_movement` corresponds to the number of positions to move each wheel, constrained from -32767 to 32767, and `top_speed` to the speed which is constrained between 1 to 512. |
+| arc                               |                                                              |
 | `move(left, right, speed)`        | Accelerate, travel, and decelerate across a distance in positions, motors will complete the travel at the same time. `left` and `right` are the distance in position, constrained from -32767 to 32767. `speed` is the positions per second, which goes from 1 to 32767. |
 | `go_speed(left, right)`           | Accelerate and sustain a speed, independently for each motor. `left`/`right` correspond to the positions per second, which goes from -32767 to 32767. |
 | `go(left, right)`                 | Set and hold the motor output power, independently for each motor. `left`/`right` corresponds to the power of each motor, values go from -127 to 127. |
