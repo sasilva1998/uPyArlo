@@ -7,10 +7,11 @@ class ArloRobot(object):
 
     # com packet sending
     def com(self, packet, ret):
+        msg = ''
         for i in packet:
-            self.uart.write(i)
-            self.uart.write(" ")
-        self.uart.write("\r")
+            msg = msg + i + ' '
+        msg = msg + '\r'
+        self.uart.write(msg)
         tinit = utime.ticks_ms()
         resp = ""
 
@@ -207,6 +208,9 @@ class ArloRobot(object):
     # -------- config ----------
     def restore_config(self, ret=False):
         return self.com(["RESTORE"], ret)
+
+    def read_config(self, command, ret=True):
+        return self.com([comman], ret)
 
 
 def constrain(val, min_val, max_val):
