@@ -64,7 +64,6 @@ class ArloRobot(object):
 
         self.com(["TXPIN", "CH2"], False)  # needed so that reading is possible
         self.com(["DEC"], False)
-        self.com(["ECHO", "ON"], False)
 
     # end serial connection
     def end(self):
