@@ -19,7 +19,7 @@ class ArloRobot(object):
             while (utime.ticks_ms() - tinit) < 150:  # timeout of 1600us
                 data = self.uart.read(1)
                 if data is not None and data != b"\r":
-                    resp = resp + str(data)[2:][:-1]
+                    resp = resp + data.decode('ascii')
                 elif data == b"\r":
                     break
 
