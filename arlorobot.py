@@ -1,53 +1,75 @@
 # pins and serial library
 from machine import UART
-import utime
+from utime import sleep, sleep_ms, ticks_ms
 
 # object to control de DHB-10 driver
 class ArloRobot(object):
 
     # com packet sending
-    def com(self, packet, ret):
-        msg = ''
+    def com(self, packet, ret=False):
+        msg = ""
         for i in packet:
-            msg = msg + i + ' '
-        msg = msg + '\r'
-        self.uart.write(msg)
-        tinit = utime.ticks_ms()
+            msg = msg + i + " "
+        msg = msg[:-1] + "\r"
+
+        for i in msg:
+            self.uart.write(bytes(i, "utf-8"))
+            # sleep_ms(self.pace)
+
         resp = ""
-
+        data = ""
         if ret:
-            while (utime.ticks_ms() - tinit) < 150:  # timeout of 1600us
+            while str(data) != str(b"\r") and data is not None:
                 data = self.uart.read(1)
-                if data is not None and data != b"\r":
-                    resp = resp + data.decode('ascii')
-                elif data == b"\r":
-                    break
-
-            if resp is not None:
-                resp = resp.split("xd6")[-1].split("xc3")[-1].split(" ")
-
-                try:
-                    resp = [int(i) for i in resp]
-                except:
-                    return resp
-
-                if len(resp) != 2:
-                    return resp[0]
-                return resp
+                # print(data)
+                # sleep_ms(self.pace)
+                if str(data) != str(b"\r"):
+                    try:
+                        resp = resp + str(data)[2:][:-1]
+                    except Exception as e:
+                        print(e)
             return resp
         else:
-            pass
+            self.uart.read()
 
     # set up/set down
     # serialid is defined as the ID of the serial bus from the
     # microcontroller, however tx and rx can be defined
-    def __init__(self, serial_id=2, baudrate=19200, **kwargs):
+    def __init__(self, serial_id=2, baudrate=19200, timeout=500, pace=0, **kwargs):
         self.baudrate = baudrate
         self.serial_id = serial_id
+        self.pace = 0
+        self.timeout = timeout
 
-        if "serial" in kwargs:
-            self.uart = kwargs.get("serial")
-        elif "tx" in kwargs and "rx" in kwargs:
+        if "tx" in kwargs and "rx" in kwargs:
+            self.uart = UART(self.serial_id, 19200)
+            self.uart.init(
+                19200,
+                tx=kwargs.get("tx"),
+                rx=kwargs.get("rx"),
+                bits=8,
+                parity=None,
+                stop=1,
+                txbuf=0,
+                timeout=self.timeout,
+            )
+            print("TX pin and RX Pin defined.")
+        else:
+            self.uart = UART(self.serial_id, 19200)
+            self.uart.init(
+                19200, bits=8, parity=None, stop=1, txbuf=0, timeout=self.timeout
+            )
+
+        self.com(["TXPIN", "CH2"])
+        sleep(0.5)
+        self.com(["RXPIN", "CH1"])
+        sleep(0.5)
+        self.com(["DEC"])
+        sleep(0.5)
+        self.com(["BAUD", str(self.baudrate)])
+        sleep(0.5)
+
+        if "tx" in kwargs and "rx" in kwargs:
             self.uart = UART(self.serial_id, self.baudrate)
             self.uart.init(
                 self.baudrate,
@@ -57,13 +79,22 @@ class ArloRobot(object):
                 parity=None,
                 stop=1,
                 txbuf=0,
+                timeout=self.timeout,
             )
         else:
             self.uart = UART(self.serial_id, self.baudrate)
-            self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0)
+            self.uart.init(
+                self.baudrate,
+                bits=8,
+                parity=None,
+                stop=1,
+                txbuf=0,
+                timeout=self.timeout,
+            )
 
-        self.com(["TXPIN", "CH2"], False)  # needed so that reading is possible
-        self.com(["DEC"], False)
+        self.com(["PACE", str(pace)])
+        self.pace = pace
+        sleep(0.5)
 
     # end serial connection
     def end(self):
@@ -101,7 +132,12 @@ class ArloRobot(object):
     # --------------------------- information methods -----------------------
 
     def read_counts(self, ret=True):
-        return self.com(["DIST"], ret)
+        counts = self.com(["DIST"], ret)
+        try:
+            counts = counts.split(" ")
+        except Exception as e:
+            print(e)
+        return counts
 
     def read_left_counts(self, ret=True):
         return self.com(["DIST"], ret)[0]
@@ -209,7 +245,7 @@ class ArloRobot(object):
         return self.com(["RESTORE"], ret)
 
     def read_config(self, command, ret=True):
-        return self.com([comman], ret)
+        return self.com([command], ret)
 
 
 def constrain(val, min_val, max_val):
