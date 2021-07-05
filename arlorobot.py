@@ -35,7 +35,7 @@ class ArloRobot(object):
     # set up/set down
     # serialid is defined as the ID of the serial bus from the
     # microcontroller, however tx and rx can be defined
-    def __init__(self, serial_id=2, baudrate=19200, timeout=500, pace=0, **kwargs):
+    def __init__(self, serial_id=2, baudrate=19200, timeout=30, pace=0, **kwargs):
         self.baudrate = baudrate
         self.serial_id = serial_id
         self.pace = 0
