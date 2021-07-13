@@ -145,6 +145,14 @@ class ArloRobot(object):
     def read_right_counts(self, ret=True):
         return self.com(["DIST"], ret)[1]
 
+    def read_speeds(self, ret=True):
+        speeds = self.com(["SPD"], ret)
+        try:
+            speeds = speeds.split(" ")
+        except Exception as e:
+            print(e)
+        return speeds
+
     def read_left_speed(self, ret=True):
         return self.com(["SPD"], ret)[0]
 
