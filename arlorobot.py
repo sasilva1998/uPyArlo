@@ -7,14 +7,17 @@ class ArloRobot(object):
 
     # com packet sending
     def com(self, packet, ret=False):
+
         msg = ""
         for i in packet:
             msg = msg + i + " "
         msg = msg[:-1] + "\r"
-
-        for i in msg:
-            self.uart.write(bytes(i, "utf-8"))
-            # sleep_ms(self.pace)
+        if not ret:
+            self.uart.write(bytes(msg, "utf-8"))
+        else:
+            for i in msg:
+                self.uart.write(bytes(i, "utf-8"))
+                # sleep_ms(self.pace)
 
         resp = ""
         data = ""
